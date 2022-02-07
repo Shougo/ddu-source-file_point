@@ -41,8 +41,8 @@ export class Source extends BaseSource<Params> {
 
         const exists = async (filename: string) => {
           try {
-            await Deno.stat(filename);
-            return true;
+            const stat = await Deno.stat(filename);
+            return stat.isFile;
           } catch (_) {
             return false;
           }
