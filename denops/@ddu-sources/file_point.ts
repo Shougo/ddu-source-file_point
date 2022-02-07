@@ -42,7 +42,6 @@ export class Source extends BaseSource<Params> {
         const exists = async (filename: string) => {
           try {
             await Deno.stat(filename);
-            // successful, file or directory must exist
             return true;
           } catch (_) {
             return false;
@@ -77,7 +76,7 @@ export class Source extends BaseSource<Params> {
         }
 
         const fullPath = isAbsolute(cfile) ? cfile : join(cwd, cfile);
-        if (await exists(fullPath)) {
+        if (cfile != "" && await exists(fullPath)) {
           controller.enqueue(
             [{ word: cfile, action: { path: fullPath } }],
           );
