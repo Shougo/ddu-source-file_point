@@ -1,7 +1,4 @@
-import {
-  BaseSource,
-  Item,
-} from "https://deno.land/x/ddu_vim@v1.8.7/types.ts";
+import { BaseSource, Item } from "https://deno.land/x/ddu_vim@v1.8.7/types.ts";
 import { Denops, fn } from "https://deno.land/x/ddu_vim@v1.8.7/deps.ts";
 import { ActionData } from "https://deno.land/x/ddu_kind_file@v0.3.0/file.ts";
 import { isAbsolute, join } from "https://deno.land/std@0.149.0/path/mod.ts";
@@ -36,8 +33,22 @@ export class Source extends BaseSource<Params> {
     return new ReadableStream({
       async start(controller) {
         const cwd = await fn.getcwd(args.denops) as string;
-        const re = /^.*?([^: ]+):(\d+)(?::(\d+))?/;
-        const matched = line.match(re);
+
+        let matched = null;
+        for (
+          const re of [
+            // NOTE: path:line:col
+            /^.*?([^: ]+)(?:[: ])(\d+)(?::(\d+))?/,
+            // NOTE: path(line,col)
+            /^(.*)\((\d+),(\d+)\)/,
+          ]
+        ) {
+          matched = line.match(re);
+
+          if (matched) {
+            break;
+          }
+        }
 
         const exists = async (filename: string) => {
           try {
