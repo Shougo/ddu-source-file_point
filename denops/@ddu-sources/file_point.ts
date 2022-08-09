@@ -18,6 +18,9 @@ export class Source extends BaseSource<Params> {
 
     try {
       this.cfile = await fn.expand(args.denops, "<cfile>") as string;
+
+      // Remove "file://" prefix pattern
+      this.cfile = this.cfile.replace(/^file:\/\//, '');
     } catch (_: unknown) {
       // Ignore expand() errors
     }
