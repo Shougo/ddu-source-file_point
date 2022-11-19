@@ -1,7 +1,7 @@
-import { BaseSource, Item } from "https://deno.land/x/ddu_vim@v1.8.7/types.ts";
-import { Denops, fn } from "https://deno.land/x/ddu_vim@v1.8.7/deps.ts";
-import { ActionData } from "https://deno.land/x/ddu_kind_file@v0.3.0/file.ts";
-import { isAbsolute, join } from "https://deno.land/std@0.149.0/path/mod.ts";
+import { BaseSource, Item } from "https://deno.land/x/ddu_vim@v2.0.0/types.ts";
+import { Denops, fn } from "https://deno.land/x/ddu_vim@v2.0.0/deps.ts";
+import { ActionData } from "https://deno.land/x/ddu_kind_file@v0.3.1/file.ts";
+import { isAbsolute, join } from "https://deno.land/std@0.165.0/path/mod.ts";
 
 type Params = Record<string, never>;
 
