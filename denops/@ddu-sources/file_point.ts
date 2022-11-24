@@ -6,12 +6,12 @@ import { isAbsolute, join } from "https://deno.land/std@0.165.0/path/mod.ts";
 type Params = Record<string, never>;
 
 export class Source extends BaseSource<Params> {
-  kind = "file";
+  override kind = "file";
 
-  line = "";
-  cfile = "";
+  private line = "";
+  private cfile = "";
 
-  async onInit(args: {
+  override async onInit(args: {
     denops: Denops;
   }): Promise<void> {
     this.line = await fn.getline(args.denops, ".");
@@ -26,7 +26,7 @@ export class Source extends BaseSource<Params> {
     }
   }
 
-  gather(args: {
+  override gather(args: {
     denops: Denops;
     sourceParams: Params;
   }): ReadableStream<Item<ActionData>[]> {
@@ -105,7 +105,7 @@ export class Source extends BaseSource<Params> {
     });
   }
 
-  params(): Params {
+  override params(): Params {
     return {};
   }
 }
