@@ -2,7 +2,8 @@
 
 File point source for ddu.vim
 
-This source collects current line of "file:line" format as items.
+This source collects current line of "filename" or "filename:line" format as
+items.
 
 ## Required
 
