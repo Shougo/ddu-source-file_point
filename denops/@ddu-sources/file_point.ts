@@ -92,7 +92,7 @@ export class Source extends BaseSource<Params> {
             ]);
           }
         } else {
-          if (extname(cfile).length != 0) {
+          if (cfile.includes("/") || extname(cfile).length != 0) {
             const finds = await fn.findfile(
               args.denops,
               cfile,
