@@ -1,7 +1,11 @@
 import { BaseSource, Item } from "https://deno.land/x/ddu_vim@v2.8.3/types.ts";
 import { Denops, fn } from "https://deno.land/x/ddu_vim@v2.8.3/deps.ts";
 import { ActionData } from "https://deno.land/x/ddu_kind_file@v0.4.0/file.ts";
-import { extname, isAbsolute, join } from "https://deno.land/std@0.184.0/path/mod.ts";
+import {
+  extname,
+  isAbsolute,
+  join,
+} from "https://deno.land/std@0.184.0/path/mod.ts";
 
 type Params = Record<string, never>;
 
@@ -19,10 +23,11 @@ export class Source extends BaseSource<Params> {
     this.line = await fn.getline(args.denops, ".");
 
     try {
-      this.cfile = await fn.expand(args.denops, "<cfile>") as string;
-
       // Remove "file://" prefix pattern
-      this.cfile = this.cfile.replace(/^file:\/\//, "");
+      this.cfile = (await fn.expand(args.denops, "<cfile>") as string).replace(
+        /^file:\/\//,
+        "",
+      );
     } catch (_: unknown) {
       // Ignore expand() errors
     }
@@ -34,6 +39,7 @@ export class Source extends BaseSource<Params> {
   }): ReadableStream<Item<ActionData>[]> {
     const cfile = this.cfile;
     const line = this.line;
+
     return new ReadableStream({
       async start(controller) {
         if (cfile.length == 0) {
@@ -46,10 +52,12 @@ export class Source extends BaseSource<Params> {
         let matched = null;
         for (
           const re of [
-            // NOTE: path:line:col
+            // NOTE: File "{path}", line {line}
+            /^\s*File "(.*)", line (\d+)/,
+            // NOTE: {path}({line},{col})
+            /^\s*(.*)\((\d+),(\d+)\)/,
+            // NOTE: {path}:{line}:{col}
             /^.*?([^: ]+)(?:[: ])(\d+)(?::(\d+))?/,
-            // NOTE: path(line,col)
-            /^(.*)\((\d+),(\d+)\)/,
           ]
         ) {
           matched = line.match(re);
@@ -92,7 +100,11 @@ export class Source extends BaseSource<Params> {
             ]);
           }
         } else {
-          if (cfile.includes("/") || extname(cfile).length != 0) {
+          if (new RegExp("^https?://").test(cfile)) {
+            controller.enqueue(
+              [{ word: cfile, action: { path: cfile } }],
+            );
+          } else if (cfile.includes("/") || extname(cfile).length != 0) {
             const finds = await fn.findfile(
               args.denops,
               cfile,
@@ -109,12 +121,6 @@ export class Source extends BaseSource<Params> {
                 }),
               );
             }
-          }
-
-          if (new RegExp("^https?://").test(cfile)) {
-            controller.enqueue(
-              [{ word: cfile, action: { path: cfile } }],
-            );
           }
         }
 
