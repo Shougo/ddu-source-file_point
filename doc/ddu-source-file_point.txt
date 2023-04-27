@@ -22,7 +22,7 @@ It parses below patterns.
 
 * {filename}
 
-* File "{path}", line {line}
+* "{path}", line {line}
 
 * {path}({line},{col})
 

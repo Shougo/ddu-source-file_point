@@ -52,8 +52,8 @@ export class Source extends BaseSource<Params> {
         let matched = null;
         for (
           const re of [
-            // NOTE: File "{path}", line {line}
-            /^\s*File "(.*)", line (\d+)/,
+            // NOTE: "{path}", line {line}
+            /["'](.*)["'],? line:? (\d+)/,
             // NOTE: {path}({line},{col})
             /^\s*(.*)\((\d+),(\d+)\)/,
             // NOTE: {path}:{line}:{col}
