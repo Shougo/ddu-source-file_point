@@ -49,15 +49,15 @@ export class Source extends BaseSource<Params> {
 
         const cwd = await fn.getcwd(args.denops) as string;
 
-        let matched = null;
+        let matched: RegExpMatchArray | null = null;
         for (
           const re of [
             // NOTE: "{path}", line {line}
-            /["'](.*)["'],? line:? (\d+)/,
+            /["']([/a-zA-Z_].*)["'],? line:? (\d+)/,
             // NOTE: {path}({line},{col})
-            /^\s*(.*)\((\d+),(\d+)\)/,
+            /([/a-zA-Z_].*)\((\d+),(\d+)\)/,
             // NOTE: {path}:{line}:{col}
-            /^.*?([^: ]+)(?:[: ])(\d+)(?::(\d+))?/,
+            /([/a-zA-Z_][^: ]+)(?:[: ])(\d+)(?::(\d+))?/,
           ]
         ) {
           matched = line.match(re);
