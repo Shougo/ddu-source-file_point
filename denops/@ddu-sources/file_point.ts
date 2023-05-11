@@ -53,9 +53,9 @@ export class Source extends BaseSource<Params> {
         for (
           const re of [
             // NOTE: "{path}", line {line}
-            /["']([/a-zA-Z_].*)["'],? line:? (\d+)/,
+            /["']([/a-zA-Z_][^"]*)["'],? line:? (\d+)/,
             // NOTE: {path}({line},{col})
-            /([/a-zA-Z_].*)\((\d+),(\d+)\)/,
+            /([/a-zA-Z_]\S+)\((\d+),(\d+)\)/,
             // NOTE: {path}:{line}:{col}
             /([/a-zA-Z_][^: ]+)(?:[: ])(\d+)(?::(\d+))?/,
           ]
