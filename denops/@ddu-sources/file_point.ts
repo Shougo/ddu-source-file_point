@@ -21,16 +21,9 @@ export class Source extends BaseSource<Params> {
     denops: Denops;
   }): Promise<void> {
     this.line = await fn.getline(args.denops, ".");
-
-    try {
-      // Remove "file://" prefix pattern
-      this.cfile = (await fn.expand(args.denops, "<cfile>") as string).replace(
-        /^file:\/\//,
-        "",
-      );
-    } catch (_: unknown) {
-      // Ignore expand() errors
-    }
+    this.cfile = await args.denops.call(
+      "ddu#source#file_point#cfile",
+    ) as string;
   }
 
   override gather(args: {
