@@ -1,9 +1,11 @@
-function! ddu#source#file_point#cfile()
-  const prev_line = '.'->getline()[: '.'->col()-1]
-  const next_line = '.'->getline()['.'->col() :]
+function! ddu#source#file_point#cfile(line, col)
+  const prev_line = a:line[: a:col -1]
+  const next_line = a:line[a:col :]
   const filename_pattern = '[0-9a-zA-Z_./#+*$%@,{}\[\]!~=:\\?-]*'
   const prev_cfile = prev_line->matchstr(filename_pattern ..'$')
   const next_cfile = next_line->matchstr('^' .. filename_pattern)
+  echomsg prev_line
+  echomsg prev_cfile
   return s:expand(prev_cfile .. next_cfile)->substitute('^file://', '', '')
 endfunction
 

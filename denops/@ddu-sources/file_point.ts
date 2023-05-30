@@ -1,4 +1,8 @@
-import { BaseSource, Item } from "https://deno.land/x/ddu_vim@v2.8.4/types.ts";
+import {
+  BaseSource,
+  Context,
+  Item,
+} from "https://deno.land/x/ddu_vim@v2.8.4/types.ts";
 import { Denops, fn } from "https://deno.land/x/ddu_vim@v2.8.4/deps.ts";
 import { ActionData } from "https://deno.land/x/ddu_kind_file@v0.4.0/file.ts";
 import {
@@ -10,28 +14,39 @@ import {
 type Params = Record<string, never>;
 
 const FIND_PATTERN = ".**5";
+const MAX_BACKWARD = 100;
 
 export class Source extends BaseSource<Params> {
   override kind = "file";
 
   private line = "";
   private cfile = "";
+  private lineNr = -1;
+  private col = -1;
 
   override async onInit(args: {
     denops: Denops;
   }): Promise<void> {
-    this.line = await fn.getline(args.denops, ".");
+    this.lineNr = await fn.line(args.denops, ".");
+    this.col = await fn.col(args.denops, ".");
+    this.line = await fn.getline(args.denops, ".") +
+      await fn.getline(args.denops, this.lineNr + 1);
     this.cfile = await args.denops.call(
       "ddu#source#file_point#cfile",
+      this.line,
+      this.col,
     ) as string;
   }
 
   override gather(args: {
     denops: Denops;
+    context: Context;
     sourceParams: Params;
   }): ReadableStream<Item<ActionData>[]> {
     const cfile = this.cfile;
     const line = this.line;
+    const col = this.col;
+    let checkLineNr = this.lineNr - 1;
 
     return new ReadableStream({
       async start(controller) {
@@ -51,6 +66,8 @@ export class Source extends BaseSource<Params> {
             /([/a-zA-Z_]\S+)\((\d+),(\d+)\)/,
             // NOTE: {path}:{line}:{col}
             /([/a-zA-Z_][^: ]+)(?:[: ])(\d+)(?::(\d+))?/,
+            // NOTE: {line}:{col}: messages
+            /()\s+(\d+):(\d+).*$/,
           ]
         ) {
           matched = line.match(re);
@@ -73,12 +90,44 @@ export class Source extends BaseSource<Params> {
             return ary[index] ?? def;
           };
 
-          // Search from findfile()
-          const find = await fn.findfile(
+          const matchedPath = parseMatched(matched, 1, "");
+
+          let find = await fn.findfile(
             args.denops,
-            parseMatched(matched, 1, "") as string,
+            matchedPath,
             FIND_PATTERN,
           ) as string;
+
+          let count = 0;
+          while (
+            matchedPath.length === 0 && find.length === 0 &&
+            count < MAX_BACKWARD
+          ) {
+            // Search to backward.
+            const line = await fn.getbufline(
+              args.denops,
+              args.context.bufNr,
+              checkLineNr,
+            ) as string[];
+            if (line.length == 0) {
+              break;
+            }
+
+            const cfile = await args.denops.call(
+              "ddu#source#file_point#cfile",
+              line[0],
+              col,
+            ) as string;
+
+            find = await fn.findfile(
+              args.denops,
+              cfile,
+              FIND_PATTERN,
+            ) as string;
+
+            checkLineNr -= 1;
+            count++;
+          }
 
           if (find.length != 0) {
             controller.enqueue([
