@@ -4,8 +4,6 @@ function! ddu#source#file_point#cfile(line, col)
   const filename_pattern = '[0-9a-zA-Z_./#+*$%@,{}\[\]!~=:\\?-]*'
   const prev_cfile = prev_line->matchstr(filename_pattern ..'$')
   const next_cfile = next_line->matchstr('^' .. filename_pattern)
-  echomsg prev_line
-  echomsg prev_cfile
   return s:expand(prev_cfile .. next_cfile)->substitute('^file://', '', '')
 endfunction
 
