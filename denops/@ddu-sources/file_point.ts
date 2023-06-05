@@ -3,7 +3,7 @@ import {
   Context,
   Item,
 } from "https://deno.land/x/ddu_vim@v2.8.4/types.ts";
-import { Denops, fn } from "https://deno.land/x/ddu_vim@v2.8.4/deps.ts";
+import { Denops, fn, op } from "https://deno.land/x/ddu_vim@v2.8.4/deps.ts";
 import { ActionData } from "https://deno.land/x/ddu_kind_file@v0.4.0/file.ts";
 import {
   extname,
@@ -31,7 +31,10 @@ export class Source extends BaseSource<Params> {
     this.col = await fn.col(args.denops, ".");
     this.line = await fn.getline(args.denops, ".");
     const maxCol = await fn.col(args.denops, "$");
-    if (maxCol > (await fn.winwidth(args.denops, 0) as number)) {
+    const winWidth = (await fn.winwidth(args.denops, 0) as number);
+    const buftype = await op.buftype.getLocal(args.denops);
+    if (maxCol > winWidth && buftype === "terminal") {
+      // NOTE: auto wrap for termianl buffer
       this.line += await fn.getline(args.denops, this.lineNr + 1);
     }
     this.cfile = await args.denops.call(
