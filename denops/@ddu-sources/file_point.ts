@@ -29,8 +29,11 @@ export class Source extends BaseSource<Params> {
   }): Promise<void> {
     this.lineNr = await fn.line(args.denops, ".");
     this.col = await fn.col(args.denops, ".");
-    this.line = await fn.getline(args.denops, ".") +
-      await fn.getline(args.denops, this.lineNr + 1);
+    this.line = await fn.getline(args.denops, ".");
+    const maxCol = await fn.col(args.denops, "$");
+    if (maxCol > (await fn.winwidth(args.denops, 0) as number)) {
+      this.line += await fn.getline(args.denops, this.lineNr + 1);
+    }
     this.cfile = await args.denops.call(
       "ddu#source#file_point#cfile",
       this.line,
