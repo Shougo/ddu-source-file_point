@@ -2,14 +2,14 @@ import {
   BaseSource,
   Context,
   Item,
-} from "https://deno.land/x/ddu_vim@v2.8.4/types.ts";
-import { Denops, fn, op } from "https://deno.land/x/ddu_vim@v2.8.4/deps.ts";
-import { ActionData } from "https://deno.land/x/ddu_kind_file@v0.4.0/file.ts";
+} from "https://deno.land/x/ddu_vim@v3.0.0/types.ts";
+import { Denops, fn, op } from "https://deno.land/x/ddu_vim@v3.0.0/deps.ts";
+import { ActionData } from "https://deno.land/x/ddu_kind_file@v0.5.0/file.ts";
 import {
   extname,
   isAbsolute,
   join,
-} from "https://deno.land/std@0.188.0/path/mod.ts";
+} from "https://deno.land/std@0.190.0/path/mod.ts";
 
 type Params = Record<string, never>;
 
@@ -31,7 +31,7 @@ export class Source extends BaseSource<Params> {
     this.col = await fn.col(args.denops, ".");
     this.line = await fn.getline(args.denops, ".");
     const maxCol = await fn.col(args.denops, "$");
-    const winWidth = (await fn.winwidth(args.denops, 0) as number);
+    const winWidth = await fn.winwidth(args.denops, 0) as number;
     const buftype = await op.buftype.getLocal(args.denops);
     if (maxCol > winWidth && buftype === "terminal") {
       // NOTE: auto wrap for termianl buffer
@@ -150,9 +150,12 @@ export class Source extends BaseSource<Params> {
         }
 
         if (new RegExp("^https?://").test(cfile)) {
-          controller.enqueue(
-            [{ word: cfile, action: { path: cfile } }],
-          );
+          controller.enqueue([{
+            word: cfile,
+            action: {
+              url: cfile,
+            },
+          }]);
         } else if (cfile.includes("/") || extname(cfile).length != 0) {
           const finds = await fn.findfile(
             args.denops,
