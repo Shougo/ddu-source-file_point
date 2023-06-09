@@ -167,7 +167,7 @@ export class Source extends BaseSource<Params> {
               {
                 word: find,
                 action: { path: toAbs(find, cwd) },
-              }
+              },
             ]);
           }
         }
