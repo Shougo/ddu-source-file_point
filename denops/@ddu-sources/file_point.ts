@@ -2,14 +2,14 @@ import {
   BaseSource,
   Context,
   Item,
-} from "https://deno.land/x/ddu_vim@v3.0.0/types.ts";
-import { Denops, fn, op } from "https://deno.land/x/ddu_vim@v3.0.0/deps.ts";
+} from "https://deno.land/x/ddu_vim@v3.0.1/types.ts";
+import { Denops, fn, op } from "https://deno.land/x/ddu_vim@v3.0.1/deps.ts";
 import { ActionData } from "https://deno.land/x/ddu_kind_file@v0.5.0/file.ts";
 import {
   extname,
   isAbsolute,
   join,
-} from "https://deno.land/std@0.190.0/path/mod.ts";
+} from "https://deno.land/std@0.191.0/path/mod.ts";
 
 type Params = Record<string, never>;
 
@@ -102,7 +102,7 @@ export class Source extends BaseSource<Params> {
             args.denops,
             matchedPath,
             FIND_PATTERN,
-          ) as string;
+          );
 
           let count = 0;
           while (
@@ -129,7 +129,7 @@ export class Source extends BaseSource<Params> {
               args.denops,
               cfile,
               FIND_PATTERN,
-            ) as string;
+            );
 
             checkLineNr -= 1;
             count++;
@@ -157,21 +157,18 @@ export class Source extends BaseSource<Params> {
             },
           }]);
         } else if (cfile.includes("/") || extname(cfile).length != 0) {
-          const finds = await fn.findfile(
+          const find = await fn.findfile(
             args.denops,
             cfile,
             FIND_PATTERN,
-            -1,
-          ) as string[];
-          if (finds.length != 0) {
-            controller.enqueue(
-              finds.map((find) => {
-                return {
-                  word: find,
-                  action: { path: toAbs(find, cwd) },
-                };
-              }),
-            );
+          );
+          if (find.length != 0) {
+            controller.enqueue([
+              {
+                word: find,
+                action: { path: toAbs(find, cwd) },
+              }
+            ]);
           }
         }
 
