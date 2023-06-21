@@ -2,8 +2,8 @@ import {
   BaseSource,
   Context,
   Item,
-} from "https://deno.land/x/ddu_vim@v3.2.1/types.ts";
-import { Denops, fn, op } from "https://deno.land/x/ddu_vim@v3.2.1/deps.ts";
+} from "https://deno.land/x/ddu_vim@v3.2.4/types.ts";
+import { Denops, fn, op } from "https://deno.land/x/ddu_vim@v3.2.4/deps.ts";
 import { ActionData } from "https://deno.land/x/ddu_kind_file@v0.5.0/file.ts";
 import {
   extname,
@@ -56,7 +56,7 @@ export class Source extends BaseSource<Params> {
 
     return new ReadableStream({
       async start(controller) {
-        if (cfile.length == 0) {
+        if (cfile.length === 0) {
           controller.close();
           return;
         }
@@ -115,8 +115,19 @@ export class Source extends BaseSource<Params> {
               args.context.bufNr,
               checkLineNr,
             ) as string[];
-            if (line.length == 0) {
+            if (line.length === 0) {
               break;
+            }
+            if (await op.buftype.getLocal(args.denops) === "terminal") {
+              // NOTE: auto wrap for termianl buffer
+              const nextLine = await fn.getbufline(
+                args.denops,
+                args.context.bufNr,
+                checkLineNr + 1,
+              );
+              if (nextLine.length !== 0) {
+                line[0] += nextLine;
+              }
             }
 
             const cfile = await args.denops.call(
