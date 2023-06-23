@@ -2,8 +2,8 @@ import {
   BaseSource,
   Context,
   Item,
-} from "https://deno.land/x/ddu_vim@v3.2.4/types.ts";
-import { Denops, fn, op } from "https://deno.land/x/ddu_vim@v3.2.4/deps.ts";
+} from "https://deno.land/x/ddu_vim@v3.2.6/types.ts";
+import { Denops, fn, op } from "https://deno.land/x/ddu_vim@v3.2.6/deps.ts";
 import { ActionData } from "https://deno.land/x/ddu_kind_file@v0.5.0/file.ts";
 import {
   extname,
@@ -83,10 +83,6 @@ export class Source extends BaseSource<Params> {
           }
         }
 
-        const toAbs = (path: string, cwd: string): string => {
-          return isAbsolute(path) ? path : join(cwd, path);
-        };
-
         if (matched) {
           const parseMatched = (
             ary: string[],
@@ -98,10 +94,10 @@ export class Source extends BaseSource<Params> {
 
           const matchedPath = parseMatched(matched, 1, "");
 
-          let find = await fn.findfile(
+          let find = await findfile(
             args.denops,
+            cwd,
             matchedPath,
-            FIND_PATTERN,
           );
 
           let count = 0;
@@ -136,11 +132,7 @@ export class Source extends BaseSource<Params> {
               col,
             ) as string;
 
-            find = await fn.findfile(
-              args.denops,
-              cfile,
-              FIND_PATTERN,
-            );
+            find = await findfile(args.denops, cwd, cfile);
 
             checkLineNr -= 1;
             count++;
@@ -168,11 +160,7 @@ export class Source extends BaseSource<Params> {
             },
           }]);
         } else if (cfile.includes("/") || extname(cfile).length != 0) {
-          const find = await fn.findfile(
-            args.denops,
-            cfile,
-            FIND_PATTERN,
-          );
+          const find = await findfile(args.denops, cwd, cfile);
           if (find.length != 0) {
             controller.enqueue([
               {
@@ -192,3 +180,33 @@ export class Source extends BaseSource<Params> {
     return {};
   }
 }
+
+const toAbs = (path: string, cwd: string): string => {
+  return isAbsolute(path) ? path : join(cwd, path);
+};
+
+const findfile = async (denops: Denops, cwd: string, path: string) => {
+  if (await exists(path) || await exists(toAbs(path, cwd))) {
+    return path;
+  } else {
+    return await fn.findfile(
+      denops,
+      path,
+      FIND_PATTERN,
+    );
+  }
+};
+
+const exists = async (path: string) => {
+  // Note: Deno.stat() may be failed
+  try {
+    const stat = await Deno.stat(path);
+    if (stat.isDirectory || stat.isFile || stat.isSymlink) {
+      return true;
+    }
+  } catch (_: unknown) {
+    // Ignore stat exception
+  }
+
+  return false;
+};
