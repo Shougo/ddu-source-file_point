@@ -2,14 +2,14 @@ import {
   BaseSource,
   Context,
   Item,
-} from "https://deno.land/x/ddu_vim@v3.2.6/types.ts";
-import { Denops, fn, op } from "https://deno.land/x/ddu_vim@v3.2.6/deps.ts";
-import { ActionData } from "https://deno.land/x/ddu_kind_file@v0.5.0/file.ts";
+} from "https://deno.land/x/ddu_vim@v3.4.1/types.ts";
+import { Denops, fn, op } from "https://deno.land/x/ddu_vim@v3.4.1/deps.ts";
+import { ActionData } from "https://deno.land/x/ddu_kind_file@v0.5.2/file.ts";
 import {
   extname,
   isAbsolute,
   join,
-} from "https://deno.land/std@0.192.0/path/mod.ts";
+} from "https://deno.land/std@0.193.0/path/mod.ts";
 
 type Params = Record<string, never>;
 
@@ -159,7 +159,10 @@ export class Source extends BaseSource<Params> {
               url: cfile,
             },
           }]);
-        } else if (cfile.includes("/") || extname(cfile).length != 0) {
+        } else if (
+          (cfile.includes("/") || extname(cfile).length != 0) &&
+          !(new RegExp("^/+$").test(cfile))
+        ) {
           const find = await findfile(args.denops, cwd, cfile);
           if (find.length != 0) {
             controller.enqueue([
