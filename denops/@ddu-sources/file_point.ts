@@ -2,14 +2,14 @@ import {
   BaseSource,
   Context,
   Item,
-} from "https://deno.land/x/ddu_vim@v3.4.1/types.ts";
-import { Denops, fn, op } from "https://deno.land/x/ddu_vim@v3.4.1/deps.ts";
-import { ActionData } from "https://deno.land/x/ddu_kind_file@v0.5.2/file.ts";
+} from "https://deno.land/x/ddu_vim@v3.4.2/types.ts";
+import { Denops, fn, op } from "https://deno.land/x/ddu_vim@v3.4.2/deps.ts";
+import { ActionData } from "https://deno.land/x/ddu_kind_file@v0.5.3/file.ts";
 import {
   extname,
   isAbsolute,
   join,
-} from "https://deno.land/std@0.193.0/path/mod.ts";
+} from "https://deno.land/std@0.194.0/path/mod.ts";
 
 type Params = Record<string, never>;
 
@@ -56,11 +56,6 @@ export class Source extends BaseSource<Params> {
 
     return new ReadableStream({
       async start(controller) {
-        if (cfile.length === 0) {
-          controller.close();
-          return;
-        }
-
         const cwd = await fn.getcwd(args.denops) as string;
 
         let matched: RegExpMatchArray | null = null;
@@ -74,6 +69,8 @@ export class Source extends BaseSource<Params> {
             /([/a-zA-Z_][^: ]+)(?:[: ])(\d+)(?::(\d+))?/,
             // NOTE: {line}:{col}: messages
             /()\s+(\d+):(\d+).*$/,
+            // NOTE: @@ -{line},{col}, +{line},{col} @@
+            /^()@@ [-+](\d+),(\d+) [-+](\d+),(\d+) @@(.*$)/,
           ]
         ) {
           matched = line.match(re);
@@ -126,11 +123,16 @@ export class Source extends BaseSource<Params> {
               }
             }
 
-            const cfile = await args.denops.call(
+            let cfile = await args.denops.call(
               "ddu#source#file_point#cfile",
               line[0],
               col,
             ) as string;
+
+            if (cfile.startsWith("a/") || cfile.startsWith("b/")) {
+              // Remove prefiex.
+              cfile = cfile.slice(2);
+            }
 
             find = await findfile(args.denops, cwd, cfile);
 
