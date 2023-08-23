@@ -2,14 +2,14 @@ import {
   BaseSource,
   Context,
   Item,
-} from "https://deno.land/x/ddu_vim@v3.4.2/types.ts";
-import { Denops, fn, op } from "https://deno.land/x/ddu_vim@v3.4.2/deps.ts";
+} from "https://deno.land/x/ddu_vim@v3.5.1/types.ts";
+import { Denops, fn, op } from "https://deno.land/x/ddu_vim@v3.5.1/deps.ts";
 import { ActionData } from "https://deno.land/x/ddu_kind_file@v0.5.3/file.ts";
 import {
   extname,
   isAbsolute,
   join,
-} from "https://deno.land/std@0.194.0/path/mod.ts";
+} from "https://deno.land/std@0.199.0/path/mod.ts";
 
 type Params = Record<string, never>;
 
@@ -23,6 +23,7 @@ export class Source extends BaseSource<Params> {
   private cfile = "";
   private lineNr = -1;
   private col = -1;
+  private autoWrap = false;
 
   override async onInit(args: {
     denops: Denops;
@@ -30,13 +31,18 @@ export class Source extends BaseSource<Params> {
     this.lineNr = await fn.line(args.denops, ".");
     this.col = await fn.col(args.denops, ".");
     this.line = await fn.getline(args.denops, ".");
+
+    // NOTE: auto wrap for termianl buffer
+    this.autoWrap = await op.buftype.getLocal(args.denops) === "terminal";
+
     const maxCol = await fn.col(args.denops, "$");
     const winWidth = await fn.winwidth(args.denops, 0) as number;
-    const buftype = await op.buftype.getLocal(args.denops);
-    if (maxCol > winWidth && buftype === "terminal") {
+
+    if (maxCol > winWidth && this.autoWrap) {
       // NOTE: auto wrap for termianl buffer
       this.line += await fn.getline(args.denops, this.lineNr + 1);
     }
+
     this.cfile = await args.denops.call(
       "ddu#source#file_point#cfile",
       this.line,
@@ -52,6 +58,7 @@ export class Source extends BaseSource<Params> {
     const cfile = this.cfile;
     const line = this.line;
     const col = this.col;
+    const autoWrap = this.autoWrap;
     let checkLineNr = this.lineNr - 1;
 
     return new ReadableStream({
@@ -111,7 +118,7 @@ export class Source extends BaseSource<Params> {
             if (line.length === 0) {
               break;
             }
-            if (await op.buftype.getLocal(args.denops) === "terminal") {
+            if (autoWrap) {
               // NOTE: auto wrap for termianl buffer
               const nextLine = await fn.getbufline(
                 args.denops,
