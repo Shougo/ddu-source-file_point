@@ -2,14 +2,14 @@ import {
   BaseSource,
   Context,
   Item,
-} from "https://deno.land/x/ddu_vim@v3.5.1/types.ts";
-import { Denops, fn, op } from "https://deno.land/x/ddu_vim@v3.5.1/deps.ts";
-import { ActionData } from "https://deno.land/x/ddu_kind_file@v0.5.3/file.ts";
+} from "https://deno.land/x/ddu_vim@v3.6.0/types.ts";
+import { Denops, fn, op } from "https://deno.land/x/ddu_vim@v3.6.0/deps.ts";
+import { ActionData } from "https://deno.land/x/ddu_kind_file@v0.7.1/file.ts";
 import {
   extname,
   isAbsolute,
   join,
-} from "https://deno.land/std@0.199.0/path/mod.ts";
+} from "https://deno.land/std@0.201.0/path/mod.ts";
 
 type Params = Record<string, never>;
 
