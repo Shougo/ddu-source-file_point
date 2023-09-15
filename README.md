@@ -18,6 +18,10 @@ https://github.com/Shougo/ddu.vim
 
 https://github.com/Shougo/ddu-kind-file
 
+### ddu-kind-url
+
+https://github.com/4513ECHO/ddu-kind-url
+
 ## Configuration
 
 ```vim

@@ -17,8 +17,6 @@ const FIND_PATTERN = ".**5";
 const MAX_BACKWARD = 100;
 
 export class Source extends BaseSource<Params> {
-  override kind = "file";
-
   private line = "";
   private cfile = "";
   private lineNr = -1;
@@ -151,6 +149,7 @@ export class Source extends BaseSource<Params> {
             controller.enqueue([
               {
                 word: matched[0],
+                kind: "file",
                 action: {
                   path: toAbs(find, cwd),
                   lineNr: Number(parseMatched(matched, 2, 0)),
@@ -164,6 +163,7 @@ export class Source extends BaseSource<Params> {
         if (new RegExp("^https?://").test(cfile)) {
           controller.enqueue([{
             word: cfile,
+            kind: "url",
             action: {
               url: cfile,
             },
@@ -177,6 +177,7 @@ export class Source extends BaseSource<Params> {
             controller.enqueue([
               {
                 word: find,
+                kind: "file",
                 action: { path: toAbs(find, cwd) },
               },
             ]);

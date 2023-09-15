@@ -32,11 +32,13 @@ It parses below patterns.
 ==============================================================================
 INSTALL					*ddu-source-file_point-install*
 
-Please install both "ddu.vim" and "denops.vim" and "ddu-kind-file".
+Please install both "ddu.vim", "denops.vim", "ddu-kind-file" and
+"ddu-kind-url".
 
 https://github.com/Shougo/ddu.vim
 https://github.com/vim-denops/denops.vim
 https://github.com/Shougo/ddu-kind-file
+https://github.com/4513ECHO/ddu-kind-url
 
 
 ==============================================================================
