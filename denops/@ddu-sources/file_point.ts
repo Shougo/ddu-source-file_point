@@ -5,7 +5,7 @@ import {
 } from "https://deno.land/x/ddu_vim@v3.9.0/types.ts";
 import { Denops, fn, op } from "https://deno.land/x/ddu_vim@v3.9.0/deps.ts";
 import { ActionData as ActionFile } from "https://deno.land/x/ddu_kind_file@v0.7.1/file.ts";
-import { ActionData as ActionUrl } from "https://mod.4513echo.dev/ddu_kind_url/url.ts";
+import { ActionData as ActionUrl } from "https://raw.githubusercontent.com/4513ECHO/ddu-kind-url/0.3.0/denops/%40ddu-kinds/url.ts";
 import {
   extname,
   isAbsolute,
