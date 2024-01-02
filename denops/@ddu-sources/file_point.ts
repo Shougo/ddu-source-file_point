@@ -2,14 +2,14 @@ import {
   BaseSource,
   Context,
   Item,
-} from "https://deno.land/x/ddu_vim@v3.6.0/types.ts";
-import { Denops, fn, op } from "https://deno.land/x/ddu_vim@v3.6.0/deps.ts";
+} from "https://deno.land/x/ddu_vim@v3.9.0/types.ts";
+import { Denops, fn, op } from "https://deno.land/x/ddu_vim@v3.9.0/deps.ts";
 import { ActionData } from "https://deno.land/x/ddu_kind_file@v0.7.1/file.ts";
 import {
   extname,
   isAbsolute,
   join,
-} from "https://deno.land/std@0.201.0/path/mod.ts";
+} from "https://deno.land/std@0.210.0/path/mod.ts";
 
 type Params = Record<string, never>;
 
@@ -17,34 +17,34 @@ const FIND_PATTERN = ".**5";
 const MAX_BACKWARD = 100;
 
 export class Source extends BaseSource<Params> {
-  private line = "";
-  private cfile = "";
-  private lineNr = -1;
-  private col = -1;
-  private autoWrap = false;
+  #line = "";
+  #cfile = "";
+  #lineNr = -1;
+  #col = -1;
+  #autoWrap = false;
 
   override async onInit(args: {
     denops: Denops;
   }): Promise<void> {
-    this.lineNr = await fn.line(args.denops, ".");
-    this.col = await fn.col(args.denops, ".");
-    this.line = await fn.getline(args.denops, ".");
+    this.#lineNr = await fn.line(args.denops, ".");
+    this.#col = await fn.col(args.denops, ".");
+    this.#line = await fn.getline(args.denops, ".");
 
     // NOTE: auto wrap for termianl buffer
-    this.autoWrap = await op.buftype.getLocal(args.denops) === "terminal";
+    this.#autoWrap = await op.buftype.getLocal(args.denops) === "terminal";
 
     const maxCol = await fn.col(args.denops, "$");
     const winWidth = await fn.winwidth(args.denops, 0) as number;
 
-    if (maxCol > winWidth && this.autoWrap) {
+    if (maxCol > winWidth && this.#autoWrap) {
       // NOTE: auto wrap for termianl buffer
-      this.line += await fn.getline(args.denops, this.lineNr + 1);
+      this.#line += await fn.getline(args.denops, this.#lineNr + 1);
     }
 
-    this.cfile = await args.denops.call(
+    this.#cfile = await args.denops.call(
       "ddu#source#file_point#cfile",
-      this.line,
-      this.col,
+      this.#line,
+      this.#col,
     ) as string;
   }
 
@@ -53,11 +53,11 @@ export class Source extends BaseSource<Params> {
     context: Context;
     sourceParams: Params;
   }): ReadableStream<Item<ActionData>[]> {
-    const cfile = this.cfile;
-    const line = this.line;
-    const col = this.col;
-    const autoWrap = this.autoWrap;
-    let checkLineNr = this.lineNr - 1;
+    const cfile = this.#cfile;
+    const line = this.#line;
+    const col = this.#col;
+    const autoWrap = this.#autoWrap;
+    let checkLineNr = this.#lineNr - 1;
 
     return new ReadableStream({
       async start(controller) {
