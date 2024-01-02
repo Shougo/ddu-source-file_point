@@ -4,7 +4,8 @@ import {
   Item,
 } from "https://deno.land/x/ddu_vim@v3.9.0/types.ts";
 import { Denops, fn, op } from "https://deno.land/x/ddu_vim@v3.9.0/deps.ts";
-import { ActionData } from "https://deno.land/x/ddu_kind_file@v0.7.1/file.ts";
+import { ActionData as ActionFile } from "https://deno.land/x/ddu_kind_file@v0.7.1/file.ts";
+import { ActionData as ActionUrl } from "https://mod.4513echo.dev/ddu_kind_url/url.ts";
 import {
   extname,
   isAbsolute,
@@ -52,7 +53,7 @@ export class Source extends BaseSource<Params> {
     denops: Denops;
     context: Context;
     sourceParams: Params;
-  }): ReadableStream<Item<ActionData>[]> {
+  }): ReadableStream<Item<ActionFile | ActionUrl>[]> {
     const cfile = this.#cfile;
     const line = this.#line;
     const col = this.#col;
