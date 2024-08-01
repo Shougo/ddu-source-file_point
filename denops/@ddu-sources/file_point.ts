@@ -1,16 +1,17 @@
 import {
   BaseSource,
-  Context,
-  Item,
-} from "https://deno.land/x/ddu_vim@v4.0.0/types.ts";
-import { Denops, fn, op } from "https://deno.land/x/ddu_vim@v4.0.0/deps.ts";
-import { ActionData as ActionFile } from "https://deno.land/x/ddu_kind_file@v0.7.1/file.ts";
-import { ActionData as ActionUrl } from "https://raw.githubusercontent.com/4513ECHO/ddu-kind-url/0.3.0/denops/%40ddu-kinds/url.ts";
-import {
-  extname,
-  isAbsolute,
-  join,
-} from "jsr:@std/path@0.224.0";
+  type Context,
+  type Item,
+} from "jsr:@shougo/ddu-vim@^5.0.0/types";
+
+import { type ActionData as ActionFile } from "jsr:@shougo/ddu-kind-file@^0.8.0";
+import { type ActionData as ActionUrl } from "jsr:@4513echo/ddu-kind-url@^0.4.0";
+
+import type { Denops } from "jsr:@denops/core@^7.0.0";
+import * as fn from "jsr:@denops/std@^7.0.1/function";
+import * as op from "jsr:@denops/std@7.0.1/option";
+
+import { extname, isAbsolute, join } from "jsr:@std/path@1.0.2";
 
 type Params = Record<string, never>;
 
