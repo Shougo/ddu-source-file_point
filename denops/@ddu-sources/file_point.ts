@@ -1,17 +1,21 @@
 import {
-  BaseSource,
   type Context,
   type Item,
-} from "jsr:@shougo/ddu-vim@^5.0.0/types";
+} from "jsr:@shougo/ddu-vim@~6.1.0/types";
+import {
+  BaseSource,
+} from "jsr:@shougo/ddu-vim@~6.1.0/source";
 
-import { type ActionData as ActionFile } from "jsr:@shougo/ddu-kind-file@^0.8.0";
-import { type ActionData as ActionUrl } from "jsr:@4513echo/ddu-kind-url@^0.4.0";
+import { type ActionData as ActionFile } from "jsr:@shougo/ddu-kind-file@~0.9.0";
+import { type ActionData as ActionUrl } from "jsr:@4513echo/ddu-kind-url@~0.6.0";
 
-import type { Denops } from "jsr:@denops/core@^7.0.0";
-import * as fn from "jsr:@denops/std@^7.0.1/function";
-import * as op from "jsr:@denops/std@7.0.1/option";
+import type { Denops } from "jsr:@denops/core@~7.0.0";
+import * as fn from "jsr:@denops/std@~7.0.1/function";
+import * as op from "jsr:@denops/std@~7.1.1/option";
 
-import { extname, isAbsolute, join } from "jsr:@std/path@1.0.2";
+import { extname } from "jsr:@std/path@1.0.3/extname";
+import { isAbsolute } from "jsr:@std/path@1.0.3/is-absolute";
+import { join } from "jsr:@std/path@1.0.3/join";
 
 type Params = Record<string, never>;
 
