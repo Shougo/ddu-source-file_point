@@ -1,12 +1,12 @@
-import { type Context, type Item } from "jsr:@shougo/ddu-vim@~6.1.0/types";
-import { BaseSource } from "jsr:@shougo/ddu-vim@~6.1.0/source";
+import { type Context, type Item } from "jsr:@shougo/ddu-vim@~6.4.0/types";
+import { BaseSource } from "jsr:@shougo/ddu-vim@~6.4.0/source";
 
 import { type ActionData as ActionFile } from "jsr:@shougo/ddu-kind-file@~0.9.0";
-import { type ActionData as ActionUrl } from "jsr:@4513echo/ddu-kind-url@~0.6.0";
+import { type ActionData as ActionUrl } from "jsr:@4513echo/ddu-kind-url@~0.7.0";
 
 import type { Denops } from "jsr:@denops/core@~7.0.0";
-import * as fn from "jsr:@denops/std@~7.1.0/function";
-import * as op from "jsr:@denops/std@~7.1.1/option";
+import * as fn from "jsr:@denops/std@~7.3.0/function";
+import * as op from "jsr:@denops/std@~7.3.0/option";
 
 import { extname } from "jsr:@std/path@~1.0.3/extname";
 import { isAbsolute } from "jsr:@std/path@~1.0.3/is-absolute";
@@ -68,11 +68,11 @@ export class Source extends BaseSource<Params> {
         for (
           const re of [
             // NOTE: "{path}", line {line}
-            /["']([/a-zA-Z_][^"]*)["'],? line:? (\d+)/,
+            /["']([./a-zA-Z_][^"]*)["'],? line:? (\d+)/,
             // NOTE: {path}({line},{col})
-            /([/a-zA-Z_]\S+)\((\d+),(\d+)\)/,
+            /([./a-zA-Z_]\S+)\((\d+),(\d+)\)/,
             // NOTE: {path}:{line}:{col}
-            /([/a-zA-Z_][^: ]+)(?:[: ])(\d+)(?::(\d+))?/,
+            /([./a-zA-Z_][^: ]+)(?:[: ])(\d+)(?::(\d+))?/,
             // NOTE: {line}:{col}: messages
             /()\s+(\d+):(\d+).*$/,
             // NOTE: @@ -{line},{col}, +{line},{col} @@
