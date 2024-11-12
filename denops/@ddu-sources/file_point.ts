@@ -205,7 +205,8 @@ const findfile = async (denops: Denops, cwd: string, path: string) => {
   } else {
     return await fn.findfile(
       denops,
-      path,
+      // NOTE: Remove "./" from path.  Because findfile() does not work well.
+      path.replace(/^.\//, ""),
       FIND_PATTERN,
     );
   }
