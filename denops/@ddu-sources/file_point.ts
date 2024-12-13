@@ -1,12 +1,12 @@
-import { type Context, type Item } from "jsr:@shougo/ddu-vim@~6.4.0/types";
-import { BaseSource } from "jsr:@shougo/ddu-vim@~6.4.0/source";
+import { type Context, type Item } from "jsr:@shougo/ddu-vim@~9.1.0/types";
+import { BaseSource } from "jsr:@shougo/ddu-vim@~9.1.0/source";
 
 import { type ActionData as ActionFile } from "jsr:@shougo/ddu-kind-file@~0.9.0";
 import { type ActionData as ActionUrl } from "jsr:@4513echo/ddu-kind-url@~0.7.0";
 
 import type { Denops } from "jsr:@denops/core@~7.0.0";
-import * as fn from "jsr:@denops/std@~7.3.0/function";
-import * as op from "jsr:@denops/std@~7.3.0/option";
+import * as fn from "jsr:@denops/std@~7.4.0/function";
+import * as op from "jsr:@denops/std@~7.4.0/option";
 
 import { extname } from "jsr:@std/path@~1.0.3/extname";
 import { isAbsolute } from "jsr:@std/path@~1.0.3/is-absolute";
