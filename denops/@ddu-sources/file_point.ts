@@ -32,7 +32,6 @@ export class Source extends BaseSource<Params> {
 
     // NOTE: auto wrap for termianl buffer
     this.#autoWrap = await op.buftype.getLocal(args.denops) === "terminal";
-    //this.#autoWrap = true;
 
     const maxCol = await fn.col(args.denops, "$");
     const winWidth = await fn.winwidth(args.denops, 0) as number;
@@ -59,6 +58,7 @@ export class Source extends BaseSource<Params> {
     const col = this.#col;
     const autoWrap = this.#autoWrap;
     const currentLineNr = this.#lineNr;
+    let found = false;
 
     return new ReadableStream({
       async start(controller) {
@@ -94,21 +94,21 @@ export class Source extends BaseSource<Params> {
           col: col,
         });
 
-        for (const checkLine of checkLines) {
-          for (
-            const re of [
-              // NOTE: {path}:{line}:{col}
-              /([./a-zA-Z_][^:]+)(?:[:])(\d+)(?::(\d+))?/,
-              // NOTE: {line}:{col}: messages
-              /()\s+(\d+):(\d+).*$/,
-              // NOTE: "{path}", line {line}
-              /["']([./a-zA-Z_][^"]*)["'],? line:? (\d+)/,
-              // NOTE: {path}({line},{col})
-              /([./a-zA-Z_]\S+)\((\d+),(\d+)\)/,
-              // NOTE: @@ -{line},{col}, +{line},{col} @@
-              /^()@@ [-+](\d+),(\d+) [-+](\d+),(\d+) @@(.*$)/,
-            ]
-          ) {
+        for (
+          const re of [
+            // NOTE: {path}:{line}:{col}
+            /([./a-zA-Z_][^:]+)(?:[:])(\d+)(?::(\d+))?/,
+            // NOTE: {line}:{col}: messages
+            /()\s+(\d+):(\d+).*$/,
+            // NOTE: "{path}", line {line}
+            /["']([./a-zA-Z_][^"]*)["'],? line:? (\d+)/,
+            // NOTE: {path}({line},{col})
+            /([./a-zA-Z_]\S+)\((\d+),(\d+)\)/,
+            // NOTE: @@ -{line},{col}, +{line},{col} @@
+            /^()@@ [-+](\d+),(\d+) [-+](\d+),(\d+) @@(.*$)/,
+          ]
+        ) {
+          for (const checkLine of checkLines) {
             const matched = checkLine.line.match(re);
 
             if (matched) {
@@ -138,6 +138,7 @@ export class Source extends BaseSource<Params> {
                   },
                 ]);
 
+                found = true;
                 break;
               }
             }
@@ -153,8 +154,8 @@ export class Source extends BaseSource<Params> {
             },
           }]);
         } else if (
-          (cfile.includes("/") || extname(cfile).length != 0) &&
-          !(new RegExp("^/+$").test(cfile))
+          !found && !(new RegExp("^/+$").test(cfile)) &&
+          (cfile.includes("/") || extname(cfile).length != 0)
         ) {
           const find = await findfile(args.denops, cwd, cfile);
           if (find.length != 0) {
