@@ -4,7 +4,7 @@ function ddu#source#file_point#cfile(line, col)
   const next_cfile = a:line[a:col :]->matchstr('^' .. filename_pattern)
   return s:expand(prev_cfile .. next_cfile)
         \ ->substitute('^file://', '', '')
-        \ ->substitute('\%(:\d\+\)\+$', '', '')
+        \ ->substitute('\%(:\d\+\)\+:\?$', '', '')
 endfunction
 
 function s:expand(path) abort
