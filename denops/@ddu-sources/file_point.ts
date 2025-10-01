@@ -97,17 +97,19 @@ export class Source extends BaseSource<Params> {
         for (
           const re of [
             // NOTE: {path}:{line}:{col}
-            /([./a-zA-Z_][^:]+)(?:[:])(\d+)(?::(\d+))?/,
+            /^(?!https?:\/\/)([./a-zA-Z_][^: ]+):(\d+)(?::(\d+))?/,
+            // NOTE: "{path}", line {line}
+            /["']([./a-zA-Z_][^"]*)["'],?\s+line:?\s+(\d+)/,
+            // NOTE: {path}({line},{col})
+            /([./a-zA-Z_][\w./@-]+)\s*\((\d+),\s*(\d+)(?:-(\d+))?\)/,
+            // NOTE: {path} line {line}:
+            /([./a-zA-Z_]\S*[/.]\S*)\s+line\s+(\d+):/,
+            // NOTE: {path} {line}:{col}
+            /([./a-zA-Z_]\S*)\s+(\d+):(\d+)/,
             // NOTE: {line}:{col}: messages
             /()\s+(\d+):(\d+).*$/,
-            // NOTE: "{path}", line {line}
-            /["']([./a-zA-Z_][^"]*)["'],? line:? (\d+)/,
-            // NOTE: {path}({line},{col})
-            /([./a-zA-Z_]\S+)\((\d+),(\d+)\)/,
             // NOTE: @@ -{line},{col}, +{line},{col} @@
-            /^()@@ [-+](\d+),(\d+) [-+](\d+),(\d+) @@(.*$)/,
-            // NOTE: {path} line {line}:
-            /([./a-zA-Z_][^ ]*[/.][^ ]*)\s+line\s+(\d+):/
+            /^()@@\s+[-+](\d+),(\d+)\s+[-+](\d+),(\d+)\s+@@(.*$)/,
           ]
         ) {
           for (const checkLine of checkLines) {
@@ -144,6 +146,10 @@ export class Source extends BaseSource<Params> {
                 break;
               }
             }
+          }
+
+          if (found) {
+            break;
           }
         }
 
@@ -194,7 +200,7 @@ const findfile = async (denops: Denops, cwd: string, path: string) => {
       // NOTE: Remove "./" from path.  Because findfile() does not work well.
       path.replace(/^.\//, ""),
       FIND_PATTERN,
-    );
+    ) as string;
   }
 };
 
