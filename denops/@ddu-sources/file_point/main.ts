@@ -268,3 +268,93 @@ Deno.test("RE_PATTERNS[6] matches diff @@ -{line},{col} +{line},{col} @@", () =>
   assertMatch("@@ -1,2 +3,4 @@", RE_PATTERNS[6]);
   assertNotMatch("foo.txt:1:2", RE_PATTERNS[6]);
 });
+
+const testCases = [
+  {
+    pattern: RE_PATTERNS[0],
+    input: "C:\\WINDOWS\\System32\\drivers\\etc\\hosts:4",
+    expect: {
+      path: "C:\\WINDOWS\\System32\\drivers\\etc\\hosts",
+      line: "4",
+      col: undefined,
+    },
+  },
+  {
+    pattern: RE_PATTERNS[0],
+    input: "~/.gitconfig:4",
+    expect: {
+      path: "~/.gitconfig",
+      line: "4",
+      col: undefined,
+    },
+  },
+  {
+    pattern: RE_PATTERNS[0],
+    input: "~/foo/bar.txt:123:45",
+    expect: {
+      path: "~/foo/bar.txt",
+      line: "123",
+      col: "45",
+    },
+  },
+  {
+    pattern: RE_PATTERNS[1],
+    input: '"foo/bar.txt", line 10',
+    expect: {
+      path: "foo/bar.txt",
+      line: "10",
+    },
+  },
+  {
+    pattern: RE_PATTERNS[2],
+    input: "~/.vimrc(15,8)",
+    expect: {
+      path: "~/.vimrc",
+      line: "15",
+      col: "8",
+    },
+  },
+  {
+    pattern: RE_PATTERNS[3],
+    input: "~/foo.txt line 9:",
+    expect: {
+      path: "~/foo.txt",
+      line: "9",
+    },
+  },
+  {
+    pattern: RE_PATTERNS[4],
+    input: "~/foo.txt 7:3",
+    expect: {
+      path: "~/foo.txt",
+      line: "7",
+      col: "3",
+    },
+  },
+];
+
+for (const [i, { pattern, input, expect }] of testCases.entries()) {
+  Deno.test(`RE_PATTERNS match and capture group test #${i + 1}: ${input}`, () => {
+    const m = input.match(pattern);
+    assertMatch(input, pattern);
+    if (m) {
+      if (expect.path !== undefined) {
+        if (m[1] !== expect.path) {
+          throw new Error(`Expected path='${expect.path}', got '${m[1]}'`);
+        }
+      }
+      if (expect.line !== undefined) {
+        if (m[2] !== expect.line) {
+          throw new Error(`Expected line='${expect.line}', got '${m[2]}'`);
+        }
+      }
+      if ("col" in expect && expect.col !== undefined) {
+        if (m[3] !== expect.col) {
+          throw new Error(`Expected col='${expect.col}', got '${m[3]}'`);
+        }
+      }
+    } else {
+      throw new Error(`Pattern did not match: ${input}`);
+    }
+  });
+}
