@@ -18,16 +18,16 @@ type Params = Record<string, never>;
 const FIND_PATTERN = ".**5";
 
 export const RE_PATTERNS = [
-  // NOTE: {path}:{line}:{col}
-  /^(?!https?:\/\/)(([A-Za-z]:[\\/][\w./\\~-]+)|([~./\\a-zA-Z_][\w./\\~-]+)):(\d+)(?::(\d+))?/,
+  // NOTE: {path}:{line}:{col} (パスは単独でキャプチャ)
+  /^(?!https?:\/\/)([A-Za-z]:[\\/][\w./\\~-]+|[~./\\a-zA-Z_][\w./\\~-]+):(\d+)(?::(\d+))?/,
   // NOTE: "{path}", line {line}
   /["']([A-Za-z]:[\\/][^"]*|[~./\\a-zA-Z_][^"]*)["'],?\s+line:?\s+(\d+)/,
   // NOTE: {path}({line},{col})
-  /(([A-Za-z]:[\\/][\w./\\@~-]+)|([~./\\a-zA-Z_][\w./\\@~-]+))\s*\((\d+),\s*(\d+)(?:-(\d+))?\)/,
+  /([A-Za-z]:[\\/][\w./\\@~-]+|[~./\\a-zA-Z_][\w./\\@~-]+)\s*\((\d+),\s*(\d+)(?:-(\d+))?\)/,
   // NOTE: {path} line {line}:
-  /(([A-Za-z]:[\\/][\S]*)|([~./\\a-zA-Z_]\S*[/.\\]\S*))\s+line\s+(\d+):/,
+  /([A-Za-z]:[\\/][\S]*|[~./\\a-zA-Z_]\S*[/.\\]\S*)\s+line\s+(\d+):/,
   // NOTE: {path} {line}:{col}
-  /(([A-Za-z]:[\\/][\S]*)|([~./\\a-zA-Z_]\S*))\s+(\d+):(\d+)/,
+  /([A-Za-z]:[\\/][\S]*|[~./\\a-zA-Z_]\S*)\s+(\d+):(\d+)/,
   // NOTE: {line}:{col}: messages
   /^()\s+(\d+):(\d+).*$/,
   // NOTE: @@ -{line},{col}, +{line},{col} @@
