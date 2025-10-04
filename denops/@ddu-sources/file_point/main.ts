@@ -1,20 +1,38 @@
-import { type Context, type Item } from "jsr:@shougo/ddu-vim@~10.4.0/types";
-import { BaseSource } from "jsr:@shougo/ddu-vim@~10.4.0/source";
+import { type Context, type Item } from "@shougo/ddu-vim/types";
+import { BaseSource } from "@shougo/ddu-vim/source";
 
-import { type ActionData as ActionFile } from "jsr:@shougo/ddu-kind-file@~0.9.0";
-import { type ActionData as ActionUrl } from "jsr:@4513echo/ddu-kind-url@~0.7.0";
+import { type ActionData as ActionFile } from "@shougo/ddu-kind-file";
+import { type ActionData as ActionUrl } from "@4513echo/ddu-kind-url";
 
 import type { Denops } from "jsr:@denops/core@~8.0.0";
 import * as fn from "jsr:@denops/std@~8.0.0/function";
 import * as op from "jsr:@denops/std@~8.0.0/option";
 
-import { extname } from "jsr:@std/path@~1.1.0/extname";
-import { isAbsolute } from "jsr:@std/path@~1.1.0/is-absolute";
-import { join } from "jsr:@std/path@~1.1.0/join";
+import { extname } from "@std/path/extname";
+import { isAbsolute } from "@std/path/is-absolute";
+import { join } from "@std/path/join";
+import { assertMatch, assertNotMatch } from "@std/assert";
 
 type Params = Record<string, never>;
 
 const FIND_PATTERN = ".**5";
+
+const RE_PATTERNS = [
+  // NOTE: {path}:{line}:{col}
+  /^(?!https?:\/\/)([./a-zA-Z_][^: ]+):(\d+)(?::(\d+))?/,
+  // NOTE: "{path}", line {line}
+  /["']([./a-zA-Z_][^"]*)["'],?\s+line:?\s+(\d+)/,
+  // NOTE: {path}({line},{col})
+  /([./a-zA-Z_][\w./@-]+)\s*\((\d+),\s*(\d+)(?:-(\d+))?\)/,
+  // NOTE: {path} line {line}:
+  /([./a-zA-Z_]\S*[/.]\S*)\s+line\s+(\d+):/,
+  // NOTE: {path} {line}:{col}
+  /([./a-zA-Z_]\S*)\s+(\d+):(\d+)/,
+  // NOTE: {line}:{col}: messages
+  /^()\s+(\d+):(\d+).*$/,
+  // NOTE: @@ -{line},{col}, +{line},{col} @@
+  /^()@@\s+[-+](\d+),(\d+)\s+[-+](\d+),(\d+)\s+@@(.*$)/,
+];
 
 export class Source extends BaseSource<Params> {
   #line = "";
@@ -94,24 +112,7 @@ export class Source extends BaseSource<Params> {
           col: col,
         });
 
-        for (
-          const re of [
-            // NOTE: {path}:{line}:{col}
-            /^(?!https?:\/\/)([./a-zA-Z_][^: ]+):(\d+)(?::(\d+))?/,
-            // NOTE: "{path}", line {line}
-            /["']([./a-zA-Z_][^"]*)["'],?\s+line:?\s+(\d+)/,
-            // NOTE: {path}({line},{col})
-            /([./a-zA-Z_][\w./@-]+)\s*\((\d+),\s*(\d+)(?:-(\d+))?\)/,
-            // NOTE: {path} line {line}:
-            /([./a-zA-Z_]\S*[/.]\S*)\s+line\s+(\d+):/,
-            // NOTE: {path} {line}:{col}
-            /([./a-zA-Z_]\S*)\s+(\d+):(\d+)/,
-            // NOTE: {line}:{col}: messages
-            /()\s+(\d+):(\d+).*$/,
-            // NOTE: @@ -{line},{col}, +{line},{col} @@
-            /^()@@\s+[-+](\d+),(\d+)\s+[-+](\d+),(\d+)\s+@@(.*$)/,
-          ]
-        ) {
+        for (const re of RE_PATTERNS) {
           for (const checkLine of checkLines) {
             const matched = checkLine.line.match(re);
 
@@ -217,3 +218,45 @@ const exists = async (path: string) => {
 
   return false;
 };
+
+Deno.test("RE_PATTERNS[0] matches {path}:{line}:{col}", () => {
+  assertMatch("foo/bar.txt:123:45", RE_PATTERNS[0]);
+  assertMatch("./foo.txt:1", RE_PATTERNS[0]);
+  assertNotMatch("http://foo.txt:123:45", RE_PATTERNS[0]);
+});
+
+Deno.test('RE_PATTERNS[1] matches "{path}", line {line}', () => {
+  assertMatch('"foo/bar.txt", line 123', RE_PATTERNS[1]);
+  assertMatch("'foo.txt', line: 1", RE_PATTERNS[1]);
+  assertNotMatch("foo.txt line 1", RE_PATTERNS[1]);
+});
+
+Deno.test("RE_PATTERNS[2] matches {path}({line},{col})", () => {
+  assertMatch("foo/bar.txt(123,45)", RE_PATTERNS[2]);
+  assertMatch("./foo.txt(1, 2-5)", RE_PATTERNS[2]);
+  assertNotMatch("foo.txt:1:2", RE_PATTERNS[2]);
+});
+
+Deno.test("RE_PATTERNS[3] matches {path} line {line}:", () => {
+  assertMatch("foo/bar.txt line 123:", RE_PATTERNS[3]);
+  assertMatch("./foo.js line 1:", RE_PATTERNS[3]);
+  assertNotMatch("foo.txt line 1", RE_PATTERNS[3]);
+});
+
+Deno.test("RE_PATTERNS[4] matches {path} {line}:{col}", () => {
+  assertMatch("foo/bar.txt 123:45", RE_PATTERNS[4]);
+  assertMatch("./foo.js 1:2", RE_PATTERNS[4]);
+  assertNotMatch("foo.txt:1:2", RE_PATTERNS[4]);
+});
+
+Deno.test("RE_PATTERNS[5] matches {line}:{col}: messages", () => {
+  assertMatch("  123:45: error message", RE_PATTERNS[5]);
+  assertMatch("  1:2: info", RE_PATTERNS[5]);
+  assertNotMatch("foo.txt 1:2", RE_PATTERNS[5]);
+});
+
+Deno.test("RE_PATTERNS[6] matches diff @@ -{line},{col} +{line},{col} @@", () => {
+  assertMatch("@@ -123,45 +67,89 @@ function foo", RE_PATTERNS[6]);
+  assertMatch("@@ -1,2 +3,4 @@", RE_PATTERNS[6]);
+  assertNotMatch("foo.txt:1:2", RE_PATTERNS[6]);
+});
