@@ -18,7 +18,7 @@ type Params = Record<string, never>;
 const FIND_PATTERN = ".**5";
 
 export const RE_PATTERNS = [
-  // NOTE: {path}:{line}:{col} (パスは単独でキャプチャ)
+  // NOTE: {path}:{line}:{col}: messages (パスは単独でキャプチャ)
   /^(?!https?:\/\/)([A-Za-z]:[\\/][\w./\\~-]+|[~./\\a-zA-Z_][\w./\\~-]+):(\d+)(?::(\d+))?/,
   // NOTE: "{path}", line {line}
   /["']([A-Za-z]:[\\/][^"]*|[~./\\a-zA-Z_][^"]*)["'],?\s+line:?\s+(\d+)/,
@@ -133,7 +133,7 @@ export class Source extends BaseSource<Params> {
               if (find.length != 0) {
                 controller.enqueue([
                   {
-                    word: matched[0],
+                    word: checkLine.line,
                     kind: "file",
                     action: {
                       path: toAbs(find, cwd),

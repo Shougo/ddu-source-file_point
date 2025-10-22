@@ -10,7 +10,7 @@
   },
   "imports": {
     "@4513echo/ddu-kind-url": "jsr:@4513echo/ddu-kind-url@~0.7.0",
-    "@denops/std": "jsr:@denops/std@~8.0.0",
+    "@denops/std": "jsr:@denops/std@~8.1.1",
     "@shougo/ddu-kind-file": "jsr:@shougo/ddu-kind-file@~1.0.0",
     "@shougo/ddu-vim": "jsr:@shougo/ddu-vim@~11.1.0",
     "@std/assert": "jsr:@std/assert@~1.0.7",
