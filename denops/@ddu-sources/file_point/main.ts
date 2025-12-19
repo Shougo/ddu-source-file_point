@@ -18,8 +18,8 @@ type Params = Record<string, never>;
 const FIND_PATTERN = ".**5";
 
 export const RE_PATTERNS = [
-  // NOTE: {path}:{line}:{col}: messages (パスは単独でキャプチャ)
-  /^(?!https?:\/\/)([A-Za-z]:[\\/][\w./\\~-]+|[~./\\a-zA-Z_][\w./\\~-]+):(\d+)(?::(\d+))?/,
+  // NOTE: {path}:{line}:{col}: messages
+  /((?:file:\/\/)?[~./\\][\w./\\~-]*(?:\.[a-zA-Z0-9]+)?)(?::(\d+))?(?::(\d+))?/,
   // NOTE: "{path}", line {line}
   /["']([A-Za-z]:[\\/][^"]*|[~./\\a-zA-Z_][^"]*)["'],?\s+line:?\s+(\d+)/,
   // NOTE: {path}({line},{col})
@@ -112,48 +112,6 @@ export class Source extends BaseSource<Params> {
           col: col,
         });
 
-        for (const re of RE_PATTERNS) {
-          for (const checkLine of checkLines) {
-            const matched = checkLine.line.match(re);
-
-            if (matched) {
-              let cfile = await args.denops.call(
-                "ddu#source#file_point#cfile",
-                checkLine.line,
-                checkLine.col,
-              ) as string;
-
-              if (cfile.startsWith("a/") || cfile.startsWith("b/")) {
-                // Remove prefiex.
-                cfile = cfile.slice(2);
-              }
-
-              const find = await findfile(args.denops, cwd, cfile);
-
-              if (find.length != 0) {
-                controller.enqueue([
-                  {
-                    word: checkLine.line,
-                    kind: "file",
-                    action: {
-                      path: toAbs(find, cwd),
-                      lineNr: Number(parseMatched(matched, 2, 0)),
-                      col: Number(parseMatched(matched, 3, 0)),
-                    },
-                  },
-                ]);
-
-                found = true;
-                break;
-              }
-            }
-          }
-
-          if (found) {
-            break;
-          }
-        }
-
         if (new RegExp("^https?://").test(cfile)) {
           controller.enqueue([{
             word: cfile,
@@ -162,8 +120,51 @@ export class Source extends BaseSource<Params> {
               url: cfile,
             },
           }]);
-        } else if (
-          !found && !(new RegExp("^/+$").test(cfile)) &&
+        } else {
+          for (const re of RE_PATTERNS) {
+            for (const checkLine of checkLines) {
+              const matched = checkLine.line.match(re);
+
+              if (matched) {
+                let cfile = await args.denops.call(
+                  "ddu#source#file_point#cfile",
+                  checkLine.line,
+                  checkLine.col,
+                ) as string;
+
+                if (cfile.startsWith("a/") || cfile.startsWith("b/")) {
+                  // Remove prefiex.
+                  cfile = cfile.slice(2);
+                }
+
+                const find = await findfile(args.denops, cwd, cfile);
+
+                if (find.length != 0) {
+                  controller.enqueue([
+                    {
+                      word: checkLine.line,
+                      kind: "file",
+                      action: {
+                        path: toAbs(find, cwd),
+                        lineNr: Number(parseMatched(matched, 2, 0)),
+                        col: Number(parseMatched(matched, 3, 0)),
+                      },
+                    },
+                  ]);
+
+                  found = true;
+                  break;
+                }
+              }
+            }
+
+            if (found) {
+              break;
+            }
+          }
+        }
+
+        if (!found && !(new RegExp("^/+$|^https?://").test(cfile)) &&
           (cfile.includes("/") || extname(cfile).length != 0)
         ) {
           const find = await findfile(args.denops, cwd, cfile);
