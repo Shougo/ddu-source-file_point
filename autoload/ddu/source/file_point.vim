@@ -1,5 +1,5 @@
 function ddu#source#file_point#cfile(line, col)
-  if a:col <= 1
+  if a:col < 1
     return ''
   endif
 

@@ -112,7 +112,7 @@ export class Source extends BaseSource<Params> {
           col: col,
         });
 
-        if (new RegExp("^https?://").test(cfile)) {
+        if (cfile.startsWith("http://") || cfile.startsWith("https://")) {
           controller.enqueue([{
             word: cfile,
             kind: "url",
@@ -140,14 +140,17 @@ export class Source extends BaseSource<Params> {
                 const find = await findfile(args.denops, cwd, cfile);
 
                 if (find.length != 0) {
+                  const lineNr = parseMatched(matched, 2, "");
+                  const col = parseMatched(matched, 3, "");
+
                   controller.enqueue([
                     {
-                      word: checkLine.line,
+                      word: find,
                       kind: "file",
                       action: {
                         path: toAbs(find, cwd),
-                        lineNr: Number(parseMatched(matched, 2, 0)),
-                        col: Number(parseMatched(matched, 3, 0)),
+                        ...(lineNr !== "" ? { lineNr: Number(lineNr) } : {}),
+                        ...(col !== "" ? { col: Number(col) } : {}),
                       },
                     },
                   ]);
@@ -164,7 +167,8 @@ export class Source extends BaseSource<Params> {
           }
         }
 
-        if (!found && !(new RegExp("^/+$|^https?://").test(cfile)) &&
+        if (
+          !found && !(new RegExp("^/+$|^https?://").test(cfile)) &&
           (cfile.includes("/") || extname(cfile).length != 0)
         ) {
           const find = await findfile(args.denops, cwd, cfile);
@@ -200,7 +204,7 @@ const findfile = async (denops: Denops, cwd: string, path: string) => {
     return await fn.findfile(
       denops,
       // NOTE: Remove "./" from path.  Because findfile() does not work well.
-      path.replace(/^.\//, ""),
+      path.replace(/^\.\//, ""),
       FIND_PATTERN,
     ) as string;
   }
