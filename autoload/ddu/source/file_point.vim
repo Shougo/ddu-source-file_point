@@ -1,4 +1,8 @@
 function ddu#source#file_point#cfile(line, col)
+  if a:col <= 1
+    return ''
+  endif
+
   const filename_pattern = '[0-9a-zA-Z_./#+*$%@,{}\[\]!~=:\\?&-]*'
   const prev_cfile = a:line[: a:col -1]->matchstr(filename_pattern ..'$')
   const next_cfile = a:line[a:col :]->matchstr('^' .. filename_pattern)
