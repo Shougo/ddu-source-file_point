@@ -19,15 +19,15 @@ const FIND_PATTERN = ".**5";
 
 export const RE_PATTERNS = [
   // NOTE: {path}:{line}:{col}: messages
-  /((?:file:\/\/)?[~./\\][\w./\\~-]*(?:\.[a-zA-Z0-9]+)?)(?::(\d+))?(?::(\d+))?/,
+  /((?:file:\/\/)?[~./\\][\w./\\~@-]*(?:\.[a-zA-Z0-9]+)?)(?::(\d+))?(?::(\d+))?/,
   // NOTE: "{path}", line {line}
   /["']([A-Za-z]:[\\/][^"]*|[~./\\a-zA-Z_][^"]*)["'],?\s+line:?\s+(\d+)/,
   // NOTE: {path}({line},{col})
   /([A-Za-z]:[\\/][\w./\\@~-]+|[~./\\a-zA-Z_][\w./\\@~-]+)\s*\((\d+),\s*(\d+)(?:-(\d+))?\)/,
   // NOTE: {path} line {line}:
-  /([A-Za-z]:[\\/][\S]*|[~./\\a-zA-Z_]\S*[/.\\]\S*)\s+line\s+(\d+):/,
+  /([A-Za-z]:[\\/][\S]*|[~./\\a-zA-Z_@-]\S*[/.\\]\S*)\s+line\s+(\d+):/,
   // NOTE: {path} {line}:{col}
-  /([A-Za-z]:[\\/][\S]*|[~./\\a-zA-Z_]\S*)\s+(\d+):(\d+)/,
+  /([A-Za-z]:[\\/][\S]*|[~./\\a-zA-Z_@-]\S*)\s+(\d+):(\d+)/,
   // NOTE: {line}:{col}: messages
   /^()\s+(\d+):(\d+).*$/,
   // NOTE: @@ -{line},{col}, +{line},{col} @@
@@ -145,7 +145,11 @@ export class Source extends BaseSource<Params> {
 
                   controller.enqueue([
                     {
-                      word: find,
+                      word: `${find}${
+                        lineNr !== "" ? ":" + lineNr : ""
+                      }${
+                        col !== "" ? ":" + col : ""
+                      }`,
                       kind: "file",
                       action: {
                         path: toAbs(find, cwd),
